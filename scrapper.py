@@ -17,21 +17,21 @@ import requests
 
 from utils import cc_to_us, to_date, text_strip, xpath_value, xpath_html, process_source
 
-# constant values
-PODEROPEDIA_BASE_URL = 'http://www.poderopedia.org'
-PODEROPEDIA_INIT_URLS = [
-    PODEROPEDIA_BASE_URL + '/cl',
-    PODEROPEDIA_BASE_URL + '/cl/directorio/general/persona'
-]
-PODEROPEDIA_DIRECTORIO_URL = PODEROPEDIA_BASE_URL + '/poderopedia/directorio/'
-
-PODEROPEDIA_PERSONA_PATH = 'service_personselect_letter.load/0/{}/false/{}/service_persona'
-PODEROPEDIA_COMPANY_PATH = 'service_empresaselect_letter.load/0/{}/false/{}/service_empresa'
-
 class PoderopediaRequester(object):
     """
     Base class for requests to the poderopedia website
     """
+
+    # constant values
+    PODEROPEDIA_BASE_URL = 'http://www.poderopedia.org'
+    PODEROPEDIA_INIT_URLS = [
+        PODEROPEDIA_BASE_URL + '/cl',
+        PODEROPEDIA_BASE_URL + '/cl/directorio/general/persona'
+    ]
+    PODEROPEDIA_DIRECTORIO_URL = PODEROPEDIA_BASE_URL + '/poderopedia/directorio/'
+
+    PODEROPEDIA_PERSONA_PATH = 'service_personselect_letter.load/0/{}/false/{}/service_persona'
+    PODEROPEDIA_COMPANY_PATH = 'service_empresaselect_letter.load/0/{}/false/{}/service_empresa'
 
     def __init__(self):
         self.logger = logging.getLogger('poderopedia')
@@ -52,7 +52,7 @@ class PoderopediaScrapper(PoderopediaRequester):
         self.engine = create_engine("mysql+pymysql://poder:0p3d14@192.168.0.105/poderopedia?charset=utf8")
         self.meta = MetaData()
         self.meta.reflect(bind = self.engine)
-        self.connection_table = meta.tables['connection']
+        self.connection_table = self.meta.tables['connection']
 
     def setup(self):
         """
@@ -61,7 +61,7 @@ class PoderopediaScrapper(PoderopediaRequester):
         """
         if self.session is None:
             self.session = requests.Session()
-            for url in PODEROPEDIA_INIT_URLS:
+            for url in self.PODEROPEDIA_INIT_URLS:
                 self.session.get(url)
 
     def elements(self, target):
@@ -69,9 +69,9 @@ class PoderopediaScrapper(PoderopediaRequester):
         Crawl the information of people that is available at the website.
         """
         if target == 'persons':
-            url = (PODEROPEDIA_DIRECTORIO_URL + PODEROPEDIA_PERSONA_PATH)
+            url = (self.PODEROPEDIA_DIRECTORIO_URL + self.PODEROPEDIA_PERSONA_PATH)
         elif target == 'companies':
-            url = (PODEROPEDIA_DIRECTORIO_URL + PODEROPEDIA_COMPANY_PATH)
+            url = (self.PODEROPEDIA_DIRECTORIO_URL + self.PODEROPEDIA_COMPANY_PATH)
         for char in string.ascii_lowercase:
             idx = 0
             while True:
@@ -136,9 +136,9 @@ class PoderopediaScrapper(PoderopediaRequester):
         element_data = {}
         self.logger.debug('Extracting personal information')
 
-        element_data['date_of_birth'] = to_date(xpath_value(root, '//h5[@class="perfil-details"]'))
-        element_data['abstract'] = xpath_value(root, '//p[@class="perfil-details"]')
-        element_data['last_update'] = to_date(xpath_value(root, '//span[@class="actualizado"]'))
+        element_data['date_of_birth'] = to_date(xpath_value(root, '//h5[@class="perfil-details"]', self.logger))
+        element_data['abstract'] = xpath_value(root, '//p[@class="perfil-details"]', self.logger)
+        element_data['last_update'] = to_date(xpath_value(root, '//span[@class="actualizado"]', self.logger))
 
         rows = root.xpath('.//*[@id="collapse1"]/div/form/table/tr')
         for row in rows:
@@ -148,9 +148,9 @@ class PoderopediaScrapper(PoderopediaRequester):
             key = label[0].get('for', None)
             idx = key.index('_') + 1
             key = cc_to_us(key[idx:])
-            value = xpath_value(row, './/td[@class="w2p_fw"]')
+            value = xpath_value(row, './/td[@class="w2p_fw"]', self.logger)
             element_data[key] = value
 
-        element_data['profile'] = xpath_html(root, '//div[@id="perfil"]')
+        element_data['profile'] = xpath_html(root, '//div[@id="perfil"]', self.logger)
         return element_data
 

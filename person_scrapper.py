@@ -2,8 +2,11 @@
 Module to crawl the persons available at the poderopedia website.
 """
 
+from datetime import datetime
 from lxml import html, etree
 from sqlalchemy import MetaData, Table, create_engine, exists, func, select
+
+import requests
 
 from scrapper import PoderopediaScrapper
 from utils import cc_to_us, to_date, text_strip, xpath_value, xpath_html, process_source
@@ -56,7 +59,7 @@ class PoderopediaPersonScrapper(PoderopediaScrapper):
                     self.logger.debug('{} already exists'.format(name))
                     return None
                 self.logger.debug('Querying {1}: {0}'.format(link, name))
-                response = self.session.get(PODEROPEDIA_BASE_URL + link)
+                response = self.session.get(self.PODEROPEDIA_BASE_URL + link)
                 content = response.content
                 html_tree = etree.HTML(content, parser=self.parser)
                 connections = html_tree.xpath('//div[@id="conexiones"]')
@@ -104,7 +107,7 @@ class PoderopediaPersonScrapper(PoderopediaScrapper):
         data = []
         element = root.xpath(path)
         if element:
-            url = PODEROPEDIA_BASE_URL + element[0].get('data-w2p_remote', None)
+            url = self.PODEROPEDIA_BASE_URL + element[0].get('data-w2p_remote', None)
             if url:
                 self.logger.debug('Querying {} from {}'.format(tag, url))
                 try:

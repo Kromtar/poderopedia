@@ -2,6 +2,11 @@
 Utility methods for helping scrapper.
 """
 
+from datetime import datetime
+from lxml import html, etree
+
+import re
+
 def cc_to_us(camel_cased):
     """
     Converts a camel case label into underscore format.
@@ -39,7 +44,7 @@ def xpath_value(root, path, logger=None):
     the text value of that element
     """
     element = root.xpath(path)
-    if element is not None:
+    if len(element):
         element = element[0].text
         if logger is not None:
             logger.debug('Value: {}'.format(element))
@@ -52,7 +57,7 @@ def xpath_html(root, path, logger=None):
     the HTML code of that element
     """
     element = root.xpath(path)
-    if element is not None:
+    if len(element):
         element = etree.tostring(element[0], pretty_print=True)
         if logger is not None:
             logger.debug('HTML: {}'.format(element))
