@@ -1,0 +1,4 @@
+lxml==4.0.0
+PyMySQL==0.7.11
+requests==2.18.4
+SQLAlchemy==1.1.14
