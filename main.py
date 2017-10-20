@@ -3,6 +3,8 @@ Module to crawl the poderopedia website.
 """
 import argparse
 
+from os.path import join, dirname
+
 from dotenv import load_dotenv
 
 from person_scrapper import PoderopediaPersonScrapper

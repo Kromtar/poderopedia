@@ -56,13 +56,13 @@ class PoderopediaScrapper(PoderopediaRequester):
         db_host = os.getenv('DB_HOST', 'localhost')
         db_port = os.getenv('DB_PORT', '3306')
         db_name = os.getenv('DB_NAME', 'poderopedia')
-        self.engine = create_engine('mysql+pymysql://{}:{}@{}/{}?charset=utf8'.format(
+        db_url = 'mysql+pymysql://{}:{}@{}/{}?charset=utf8'.format(
             db_username,
             db_password,
             db_host,
-            db_port,
             db_name
         )
+        self.engine = create_engine(db_url)
         self.meta = MetaData()
         self.meta.reflect(bind = self.engine)
         self.connection_table = self.meta.tables['connection']
