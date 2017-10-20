@@ -1,6 +1,7 @@
 """
 Module to crawl the poderopedia website.
 """
+import os
 
 from datetime import datetime
 from random import randint
@@ -15,7 +16,7 @@ from sqlalchemy import MetaData, Table, create_engine, exists, func, select
 
 import requests
 
-from utils import cc_to_us, to_date, text_strip, xpath_value, xpath_html, process_source
+from utils import cc_to_us, to_date, text_strip, xpath_value, xpath_html, process_sources
 
 class PoderopediaRequester(object):
     """
@@ -32,6 +33,7 @@ class PoderopediaRequester(object):
 
     PODEROPEDIA_PERSONA_PATH = 'service_personselect_letter.load/0/{}/false/{}/service_persona'
     PODEROPEDIA_COMPANY_PATH = 'service_empresaselect_letter.load/0/{}/false/{}/service_empresa'
+    PODEROPEDIA_ORGANIZATION_PATH = 'service_organizacionselect_letter.load/0/{}/false/{}/service_organizacion'
 
     def __init__(self):
         self.logger = logging.getLogger('poderopedia')
@@ -49,7 +51,18 @@ class PoderopediaScrapper(PoderopediaRequester):
 
     def __init__(self):
         super(PoderopediaScrapper, self).__init__()
-        self.engine = create_engine("mysql+pymysql://poder:0p3d14@192.168.0.105/poderopedia?charset=utf8")
+        db_username = os.getenv('DB_USERNAME', 'root')
+        db_password = os.getenv('DB_PASSWORD', '')
+        db_host = os.getenv('DB_HOST', 'localhost')
+        db_port = os.getenv('DB_PORT', '3306')
+        db_name = os.getenv('DB_NAME', 'poderopedia')
+        self.engine = create_engine('mysql+pymysql://{}:{}@{}/{}?charset=utf8'.format(
+            db_username,
+            db_password,
+            db_host,
+            db_port,
+            db_name
+        )
         self.meta = MetaData()
         self.meta.reflect(bind = self.engine)
         self.connection_table = self.meta.tables['connection']
@@ -72,6 +85,8 @@ class PoderopediaScrapper(PoderopediaRequester):
             url = (self.PODEROPEDIA_DIRECTORIO_URL + self.PODEROPEDIA_PERSONA_PATH)
         elif target == 'companies':
             url = (self.PODEROPEDIA_DIRECTORIO_URL + self.PODEROPEDIA_COMPANY_PATH)
+        elif target == 'organizations':
+            url = (self.PODEROPEDIA_DIRECTORIO_URL + self.PODEROPEDIA_ORGANIZATION_PATH)
         for char in string.ascii_lowercase:
             idx = 0
             while True:
@@ -89,6 +104,8 @@ class PoderopediaScrapper(PoderopediaRequester):
                         self.process_persons(elements)
                     elif target == 'companies':
                         self.process_companies(elements)
+                    elif target == 'organizations':
+                        self.process_organizations(elements)
                     idx = idx + 1
                     sleep(randint(1, 10))
                 except requests.exceptions.HTTPError:

@@ -64,11 +64,11 @@ def xpath_html(root, path, logger=None):
         return element
     return None
 
-def process_source(element):
+def process_sources(element):
     """
     Method used to extract a link from an a element
     """
-    source = element.find('a')
-    if source is not None:
-        return element.get('data-content', element.get('href', None))
+    sources = element.findall('a')
+    if len(sources) > 0:
+        return ';'.join([s.get('data-content', s.get('href', None)) for s in sources])
     return None

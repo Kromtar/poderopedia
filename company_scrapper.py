@@ -9,7 +9,7 @@ from sqlalchemy import MetaData, Table, create_engine, exists, func, select
 import requests
 
 from scrapper import PoderopediaScrapper
-from utils import cc_to_us, to_date, text_strip, xpath_value, xpath_html, process_source
+from utils import cc_to_us, to_date, text_strip, xpath_value, xpath_html, process_sources
 
 class PoderopediaCompanyScrapper(PoderopediaScrapper):
     """
@@ -146,7 +146,7 @@ class PoderopediaCompanyScrapper(PoderopediaScrapper):
                                         except ValueError:
                                             pass
                             idx = idx + 1
-                        source = process_source(cells[idx])
+                        source = process_sources(cells[idx])
                         entry = {
                             'type': tag,
                             'target_path': target_path,
