@@ -4,12 +4,12 @@ Module to crawl the persons available at the poderopedia website.
 
 from datetime import datetime
 from lxml import html, etree
-from sqlalchemy import MetaData, Table, create_engine, exists, func, select
+from sqlalchemy import func, select
 
 import requests
 
 from scrapper import PoderopediaScrapper
-from utils import cc_to_us, to_date, text_strip, xpath_value, xpath_html, process_sources
+from utils import text_strip, process_sources
 
 class PoderopediaPersonScrapper(PoderopediaScrapper):
     """

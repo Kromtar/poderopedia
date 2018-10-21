@@ -12,11 +12,11 @@ import re
 import string
 
 from lxml import html, etree
-from sqlalchemy import MetaData, Table, create_engine, exists, func, select
+from sqlalchemy import MetaData, create_engine, select
 
 import requests
 
-from utils import cc_to_us, to_date, text_strip, xpath_value, xpath_html, process_sources
+from utils import cc_to_us, to_date, xpath_value, xpath_html
 
 class PoderopediaRequester(object):
     """
